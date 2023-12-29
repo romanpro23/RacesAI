@@ -6,8 +6,7 @@ from car import Car
 from car2 import Car2
 
 window = pyglet.window.Window(width=1024, height=786, caption='Races AI')
-car = Car(25, 10, 0.05, 5, 0.005, 2, 1.5, 0.5, (255, 0, 0))
-car2 = Car2(25, 10, 0.05, 5, 0.005, 2, 1.5, 0.5, (0, 255, 0))
+cars = [Car(25, 10, 0.05, 5, 0.005, 3, 1.5, 0.5, (255, 0, 0)), Car(25, 10, 0.05, 5, 0.005, 3, 1.5, 1, (0, 255, 0))]
 
 direction = {
     "up": False,
@@ -23,43 +22,33 @@ def update(dt):
     global turn_dir
 
     if direction["stop"] or (direction["up"] and direction["down"]):
-        car.stop()
-        car2.stop()
+        for car in cars: car.stop()
     elif direction["up"]:
-        car.move(-1)
-        car2.move(-1)
+        for car in cars: car.move(-1)
     elif direction["down"]:
-        car.move(1)
-        car2.move(1)
+        for car in cars: car.move(1)
     else:
-        car.move(0)
-        car2.move(0)
+        for car in cars: car.move(0)
 
     if direction["left"] and direction["right"]:
-        car.rot(0)
-        car2.rot(0)
+        for car in cars: car.rot(0)
     elif direction["left"]:
-        car.rot(1)
-        car2.rot(1)
+        for car in cars: car.rot(1)
     elif direction["right"]:
-        car.rot(-1)
-        car2.rot(-1)
+        for car in cars: car.rot(-1)
     else:
-        car.rot(0)
-        car2.rot(0)
+        for car in cars: car.rot(0)
 
-    # car.rot(turn_dir)
-    # car.move(speed_dir)
+        # car.rot(turn_dir)
+        # car.move(speed_dir)
 
-    car.update()
-    car2.update()
+    for car in cars: car.update()
 
 
 @window.event
 def on_draw():
     window.clear()
-    car.draw()
-    car2.draw()
+    for car in cars: car.draw()
 
 
 @window.event
@@ -88,7 +77,6 @@ def on_key_release(symbol, modifiers):
         direction["right"] = False
     elif symbol == pyglet.window.key.SPACE:
         direction["stop"] = False
-
 
 
 pyglet.clock.schedule_interval(update, 1 / 60)

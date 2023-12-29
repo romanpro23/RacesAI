@@ -105,7 +105,7 @@ class Car:
         if self.ds == 0:
             self.speed -= self.grip * self.sign(self.speed)
 
-        if random.random() < self.drift_speed / self.drift_max_speed:
+        if self.drift_max_speed > 0 and random.random() < self.drift_speed / self.drift_max_speed:
             self.angle += self.sign(self.angle)
 
         cos = math.cos(math.radians(self.angle))
@@ -113,8 +113,8 @@ class Car:
         sin = math.sin(math.radians(self.angle))
         sin90 = math.sin(math.radians(90 - self.angle))
 
-        self.dx = self.speed * sin + sin90 * self.drift_speed
-        self.dy = self.speed * -cos + cos90 * self.drift_speed
+        self.dx = self.speed * sin + sin90 * self.drift_speed, self.max_speed
+        self.dy = self.speed * -cos + cos90 * self.drift_speed, self.max_speed
 
         tx = self.width * cos - self.height * sin
         ty = self.width * sin + self.height * cos
