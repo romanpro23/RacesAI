@@ -1,12 +1,36 @@
 import pyglet
-from pyglet import shapes
-import math
+from PIL import Image
+
+from background import Background
+from environment import Environment
+from function import *
 
 from car import Car
-from car2 import Car2
 
-window = pyglet.window.Window(width=1024, height=786, caption='Races AI')
-cars = [Car(25, 10, 0.05, 5, 0.005, 3, 1.5, 0.5, (255, 0, 0)), Car(25, 10, 0.05, 5, 0.005, 3, 1.5, 1, (0, 255, 0))]
+
+screen = pyglet.canvas.get_display().get_default_screen()
+screen_width, screen_height = screen.width, screen.height
+
+window_width, window_height = 1024, 768
+
+x = (screen_width - window_width) // 2
+y = (screen_height - window_height) // 2
+
+window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
+window.set_location(x, y)
+
+background = Background("background_3.png")
+environment = Environment(background.map)
+
+
+fps = 60
+cars = [
+    # Car(25, 10, drift_control=1, color=GREEN),
+    # Car(25, 10, drift_control=0.75, color=PURPLE),
+    # Car(25, 10, drift_control=0.5, color=RED),
+    # Car(25, 10, drift_control=0.25, color=BLUE),
+    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=120)
+]
 
 direction = {
     "up": False,
@@ -18,38 +42,39 @@ direction = {
 
 
 def update(dt):
-    global speed_dir
-    global turn_dir
+    for car in cars:
+        if not background.check(car):
+            car.update()
+        else:
+            cars.remove(car)
+            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=120))
 
     if direction["stop"] or (direction["up"] and direction["down"]):
-        for car in cars: car.stop()
+        for car in cars: car.handbrake_stop()
     elif direction["up"]:
-        for car in cars: car.move(-1)
-    elif direction["down"]:
         for car in cars: car.move(1)
+    elif direction["down"]:
+        for car in cars: car.move(-1)
     else:
         for car in cars: car.move(0)
 
     if direction["left"] and direction["right"]:
         for car in cars: car.rot(0)
     elif direction["left"]:
-        for car in cars: car.rot(1)
-    elif direction["right"]:
         for car in cars: car.rot(-1)
-    else:
-        for car in cars: car.rot(0)
-
-        # car.rot(turn_dir)
-        # car.move(speed_dir)
-
-    for car in cars: car.update()
+    elif direction["right"]:
+        for car in cars: car.rot(1)
 
 
 @window.event
 def on_draw():
     window.clear()
-    for car in cars: car.draw()
+    background.draw()
 
+    for car in cars:
+        car.draw()
+        environment.get_reward(car)
+        # print(environment.get_reward(car))
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -63,6 +88,13 @@ def on_key_press(symbol, modifiers):
         direction["right"] = True
     elif symbol == pyglet.window.key.SPACE:
         direction["stop"] = True
+    elif symbol == pyglet.window.key.Q:
+        print(environment.map.min())
+        print(environment.map.max())
+        image_pil = Image.fromarray(environment.map.clip(0, 1) * 255)
+        print(environment.map.min())
+        print(environment.map.max())
+        image_pil.save('output_image.png')
 
 
 @window.event
@@ -79,5 +111,5 @@ def on_key_release(symbol, modifiers):
         direction["stop"] = False
 
 
-pyglet.clock.schedule_interval(update, 1 / 60)
+pyglet.clock.schedule_interval(update, 1.0 / fps)
 pyglet.app.run()
