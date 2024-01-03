@@ -104,20 +104,20 @@ class Car:
 
         length_sensor_45 = length_sensor / math.sqrt(2)
         self.sensor_points = [
-            # ((-self.width // 2, -self.height // 4),
-            #  (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
-            # ((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
-            # ((self.width // 2, -self.height // 4),
-            #  (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
+            ((-self.width // 2, -self.height // 4),
+             (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
+            ((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
+            ((self.width // 2, -self.height // 4),
+             (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
             ((self.width // 2, self.height // 4),
              (self.width // 2 + length_sensor, self.height // 4)),
             ((-self.width // 2, self.height // 4),
-             (-self.width // 2 - length_sensor, self.height // 4))
-            # ((-self.width // 2, self.height * 3 // 4),
-            #  (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
-            # ((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
-            # ((self.width // 2, self.height * 3 // 4),
-            #  (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
+             (-self.width // 2 - length_sensor, self.height // 4)),
+            ((-self.width // 2, self.height * 3 // 4),
+             (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
+            ((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
+            ((self.width // 2, self.height * 3 // 4),
+             (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
         ]
 
     def draw(self):

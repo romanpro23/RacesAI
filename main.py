@@ -1,5 +1,6 @@
 import pyglet
 from PIL import Image
+import numpy as np
 
 from background import Background
 from environment import Environment
@@ -19,8 +20,8 @@ y = (screen_height - window_height) // 2
 window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
 window.set_location(x, y)
 
-background = Background("background_3.png")
-environment = Environment(background.map)
+background = Background("background_1.png")
+environment = Environment("background_1_reward_lines.png")
 
 
 fps = 60
@@ -29,7 +30,7 @@ cars = [
     # Car(25, 10, drift_control=0.75, color=PURPLE),
     # Car(25, 10, drift_control=0.5, color=RED),
     # Car(25, 10, drift_control=0.25, color=BLUE),
-    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=120)
+    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=130)
 ]
 
 direction = {
@@ -47,7 +48,7 @@ def update(dt):
             car.update()
         else:
             cars.remove(car)
-            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=120))
+            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=130))
 
     if direction["stop"] or (direction["up"] and direction["down"]):
         for car in cars: car.handbrake_stop()
@@ -73,8 +74,8 @@ def on_draw():
 
     for car in cars:
         car.draw()
-        environment.get_reward(car)
-        # print(environment.get_reward(car))
+        # environment.get_reward(car)
+        # print(environment.get_state(car))
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -89,11 +90,7 @@ def on_key_press(symbol, modifiers):
     elif symbol == pyglet.window.key.SPACE:
         direction["stop"] = True
     elif symbol == pyglet.window.key.Q:
-        print(environment.map.min())
-        print(environment.map.max())
-        image_pil = Image.fromarray(environment.map.clip(0, 1) * 255)
-        print(environment.map.min())
-        print(environment.map.max())
+        image_pil = Image.fromarray(np.ceil(environment.map * 255).astype(np.uint8))
         image_pil.save('output_image.png')
 
 
