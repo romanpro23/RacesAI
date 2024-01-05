@@ -17,7 +17,7 @@ class Background:
         self.image.blit(0, 0)
 
     def check(self, car):
-        for point in car.body_points:
+        for point in car.body:
             x, y = point
             if self.map[-int(y + car.y)][int(x + car.x)] == 0:
                 return True

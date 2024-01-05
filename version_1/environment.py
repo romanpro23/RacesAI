@@ -21,7 +21,7 @@ class Environment:
         reward = 0.0
         state = []
 
-        for sensor in car.sensor_points:
+        for sensor in car.sensors:
             sx, sy = sensor[0]
             ex, ey = sensor[1]
 

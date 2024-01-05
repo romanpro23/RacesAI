@@ -2,11 +2,11 @@ import pyglet
 from PIL import Image
 import numpy as np
 
-from background import Background
-from environment import Environment
+from version_2.background import Background
+from version_2.environment import Environment
 from function import *
 
-from car import Car
+from version_2.car import Car
 
 
 screen = pyglet.canvas.get_display().get_default_screen()
@@ -20,8 +20,8 @@ y = (screen_height - window_height) // 2
 window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
 window.set_location(x, y)
 
-background = Background("background_1.png")
-environment = Environment("background_1_reward_lines.png")
+background = Background("maps/background_1.png")
+environment = Environment("maps/background_1_reward_lines.png")
 
 
 fps = 60
@@ -43,8 +43,11 @@ direction = {
 
 
 def update(dt):
+
     for car in cars:
         if not background.check(car):
+            if environment.check(car):
+                car.body.color = (0, 0, 0)
             car.update()
         else:
             cars.remove(car)
@@ -71,6 +74,7 @@ def update(dt):
 def on_draw():
     window.clear()
     background.draw()
+    environment.draw()
 
     for car in cars:
         car.draw()

@@ -3,10 +3,10 @@ from PIL import Image
 import numpy as np
 
 from background import Background
-from environment import Environment
+from version_1.environment import Environment
 from function import *
 
-from car import Car
+from version_1.car import Car
 from agent import Agent
 
 screen = pyglet.canvas.get_display().get_default_screen()
