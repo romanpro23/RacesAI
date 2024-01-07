@@ -20,8 +20,8 @@ y = (screen_height - window_height) // 2
 window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
 window.set_location(x, y)
 
-background = Background("background_1.png")
-environment = Environment("background_1_reward_lines.png")
+background = Background("maps/background_1.png")
+environment = Environment("maps/background_1.png")
 
 
 fps = 60

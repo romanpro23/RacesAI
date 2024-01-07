@@ -11,17 +11,12 @@ class Environment:
     def __init__(self, image):
         img = Image.open(image)
         self.map = np.array(img, dtype=np.float32)
-        print(self.map.shape)
-        print(self.map[455][160])
-        print(self.map[342][160])
-        print(self.map[1][1])
-        print(self.map.max())
 
     def get_state(self, car):
         reward = 0.0
         state = []
 
-        for sensor in car.sensors:
+        for sensor in car.sensor_points:
             sx, sy = sensor[0]
             ex, ey = sensor[1]
 

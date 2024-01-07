@@ -1,7 +1,5 @@
 import math
 
-import function
-
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 PURPLE = (128, 0, 128)
@@ -24,6 +22,7 @@ class Line:
 
     a: float
     b: float
+    horizontal: bool
 
     def __init__(self, point_start, point_end):
         self.point_end = point_end
@@ -35,21 +34,26 @@ class Line:
         xs, ys = self.point_start
         xe, ye = self.point_end
 
-        self.a = (ye - ys) / (xe - xs) if xe - xs != 0 else 0
-        self.b = ye - self.a * xe
+        if xe == xs:
+            self.horizontal = True
+        else:
+            self.horizontal = False
+            self.a = (ye - ys) / (xe - xs)
+            self.b = ye - self.a * xe
 
-    def rot(self, angle):
+    def rot(self, angle, central_point):
         cos = math.cos(math.radians(angle))
         sin = math.sin(math.radians(angle))
 
         xs, ys = self.point_start
         xe, ye = self.point_end
+        xc, yc = central_point
 
-        txs = xs * cos - ys * sin
-        tys = xs * sin + ys * cos
+        txs = xc + (xs - xc) * cos - (ys - yc) * sin
+        tys = yc + (xs - xc) * sin + (ys - yc) * cos
 
-        txe = xe * cos - ye * sin
-        tye = xe * sin + ye * cos
+        txe = xc + (xe - xc) * cos - (ye - yc) * sin
+        tye = yc + (xe - xc) * sin + (ye - yc) * cos
 
         self.point_end = (txe, tye)
         self.point_start = (txs, tys)
@@ -57,14 +61,34 @@ class Line:
         self.update_coefficient()
 
     def check_intersection(self, line):
+        xs1, ys1 = self.point_start
+        xs2, ys2 = line.point_start
+        xe1, ye1 = self.point_end
+        xe2, ye2 = line.point_end
+
+        if self.horizontal or line.horizontal:
+            if self.horizontal and min(xs2, xe2) <= xs1 <= max(xs2, xe2) and min(ys2, ye2) <= ys1 <= max(ys2, ye2):
+                    y = line.a * xs1 + line.b
+                    return (xs1, y)
+            elif line.horizontal and min(xs1, xe1) <= xs2 <= max(xs1, xe1) and min(ys1, ye1) <= ys2 <= max(ys1, ye1):
+                    y = self.a * xs2 + self.b
+                    return (xs2, y)
+            else:
+                return None
+
         if self.a != line.a:
             x = (line.b - self.b) / (self.a - line.a)
             y = self.a * x + self.b
+            if min(xs1, xe1) <= x <= max(xs1, xe1) and min(xs2, xe2) <= x <= max(xs2, xe2):
+                return (x, y)
 
-            xs, ys = self.point_start
-            xe, ye = self.point_end
+        return None
 
-            if min(xs, xe) <= x <= max(xs, xe):
-                return True, (x, y)
+    def move(self, dx, dy):
+        xs, ys = self.point_start
+        xe, ye = self.point_end
 
-        return False, (0, 0)
+        self.point_end = (xe + dx, ye + dy)
+        self.point_start = (xs + dx, ys + dy)
+
+        self.update_coefficient()

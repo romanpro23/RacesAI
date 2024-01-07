@@ -3,42 +3,57 @@ import math
 import numpy as np
 import pyglet
 from PIL import Image
+import json
 
 from version_2.car import *
 from function import *
 
 
 class Environment:
-    map: np.array
     reward: int
-
     frames: list
+    rewards: list
+    finish: Line
 
-    def __init__(self, image):
-        img = Image.open(image)
-        self.map = np.array(img, dtype=np.float32)
+    lines: list
+    lines_batch: pyglet.graphics.Batch
 
-        self.frames = [
-            Line((384, 0), (384, 1024))
-        ]
-        print(self.map.shape)
-        print(self.map[455][160])
-        print(self.map[342][160])
-        print(self.map[1][1])
-        print(self.map.max())
+    def __init__(self, frames_sides, reward_lines, finish):
+        self.frames = frames_sides
+        self.rewards = reward_lines
+        self.finish = finish
 
-    def draw(self):
+        self.lines = []
+        self.lines_batch = pyglet.graphics.Batch()
+        self.__fill_lines()
+
+    def __fill_lines(self):
         for line in self.frames:
             xs, ys = line.point_start
             xe, ye = line.point_end
-            edge = pyglet.shapes.Line(xs, ys, xe, ye, width=3, color=(255, 255, 255))
-            edge.draw()
+            self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255), batch=self.lines_batch))
+
+        for line in self.rewards:
+            xs, ys = line.point_start
+            xe, ye = line.point_end
+            self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(0, 255, 0), batch=self.lines_batch))
+
+        xs, ys = self.finish.point_start
+        xe, ye = self.finish.point_end
+        self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
+
+    def draw(self):
+        self.lines_batch.draw()
+        # for line in self.lines:
+        #     line.draw()
 
     def check(self, car: Car):
         for line in self.frames:
             for side in car.body_sides:
-                if line.check_intersection(side)[0]:
+                point = line.check_intersection(side)
+                if point is not None:
                     return True
+        return False
 
     def get_state(self, car):
         reward = 0.0

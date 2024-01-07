@@ -20,8 +20,8 @@ y = (screen_height - window_height) // 2
 window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
 window.set_location(x, y)
 
-background = Background("background_1.png")
-environment = Environment(background.map)
+background = Background("maps/background_1.png")
+environment = Environment("maps/background_1.png")
 
 fps = 1000
 fps_agent = 20
@@ -108,7 +108,7 @@ def update(dt):
         epoch += 1
         print(epoch, agent.brain.epsilon, len(agent.brain.memory))
 
-        environment = Environment(background.map)
+        environment = Environment("maps/background_1.png")
         car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=150)
 
     if direction["stop"] or (direction["up"] and direction["down"]):

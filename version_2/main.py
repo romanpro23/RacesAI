@@ -7,7 +7,7 @@ from version_2.environment import Environment
 from function import *
 
 from version_2.car import Car
-
+from version_2.level_generator import Generator
 
 screen = pyglet.canvas.get_display().get_default_screen()
 screen_width, screen_height = screen.width, screen.height
@@ -20,18 +20,20 @@ y = (screen_height - window_height) // 2
 window = pyglet.window.Window(width=window_width, height=window_height, caption='Races AI')
 window.set_location(x, y)
 
+generator = Generator("maps/map_1.txt", window_width, window_height)
 background = Background("maps/background_1.png")
-environment = Environment("maps/background_1_reward_lines.png")
-
 
 fps = 60
+x, y = generator.start_point
 cars = [
     # Car(25, 10, drift_control=1, color=GREEN),
     # Car(25, 10, drift_control=0.75, color=PURPLE),
     # Car(25, 10, drift_control=0.5, color=RED),
     # Car(25, 10, drift_control=0.25, color=BLUE),
-    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=130)
+    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100)
 ]
+
+environment = Environment(generator.frames, generator.rewards, generator.finish)
 
 direction = {
     "up": False,
@@ -41,17 +43,17 @@ direction = {
     "stop": False
 }
 
+counter = 0
+fps_check = 3
 
 def update(dt):
-
+    global counter
     for car in cars:
-        if not background.check(car):
-            if environment.check(car):
-                car.body.color = (0, 0, 0)
-            car.update()
+        if environment.check(car):
+            car.body.color = (0, 0, 0)
         else:
-            cars.remove(car)
-            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=130))
+            car.body.color = (255, 0, 0)
+        car.update()
 
     if direction["stop"] or (direction["up"] and direction["down"]):
         for car in cars: car.handbrake_stop()
@@ -80,6 +82,7 @@ def on_draw():
         car.draw()
         # environment.get_reward(car)
         # print(environment.get_state(car))
+
 
 @window.event
 def on_key_press(symbol, modifiers):

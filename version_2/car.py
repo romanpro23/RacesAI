@@ -42,6 +42,7 @@ class Car:
     dfy: float
 
     body: shapes.Rectangle
+    sensors_lines: list
 
     def __init__(self,
                  height,
@@ -95,40 +96,63 @@ class Car:
         self.body.anchor_position = (self.width // 2, self.height // 4)
 
         self.length_sensor = length_sensor
-        self.body_sides = [
-            Line((-self.width // 2, -self.height // 4),  (self.width // 2, -self.height // 4)),
-            Line((-self.width // 2, -self.height // 4),  (-self.width // 2, self.height * 3 // 4)),
-            Line((self.width // 2, self.height * 3 // 4),  (self.width // 2, -self.height // 4)),
-            Line((-self.width // 2,  self.height * 3 // 4),  (self.width // 2,  self.height * 3 // 4))
-            # Line((self.width // 2, -self.height // 4),  (self.width // 2, -self.height // 4))
-        ]
+        self.__fill_body_sides()
 
         length_sensor_45 = length_sensor / math.sqrt(2)
         self.sensors = [
-            ((-self.width // 2, -self.height // 4),
-             (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
-            ((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
-            ((self.width // 2, -self.height // 4),
-             (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
-            ((self.width // 2, self.height // 4),
-             (self.width // 2 + length_sensor, self.height // 4)),
-            ((-self.width // 2, self.height // 4),
-             (-self.width // 2 - length_sensor, self.height // 4)),
-            ((-self.width // 2, self.height * 3 // 4),
-             (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
-            ((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
-            ((self.width // 2, self.height * 3 // 4),
-             (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
+            Line((-self.width // 2, -self.height // 4),
+                 (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
+            Line((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
+            Line((self.width // 2, -self.height // 4),
+                 (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
+            Line((self.width // 2, self.height // 4),
+                 (self.width // 2 + length_sensor, self.height // 4)),
+            Line((-self.width // 2, self.height // 4),
+                 (-self.width // 2 - length_sensor, self.height // 4)),
+            Line((-self.width // 2, self.height * 3 // 4),
+                 (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
+            Line((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
+            Line((self.width // 2, self.height * 3 // 4),
+                 (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
+        ]
+
+        for line in self.sensors:
+            line.move(self.x, self.y)
+
+        self.sensors_lines = []
+        for line in self.sensors:
+            xs, ys = line.point_start
+            xe, ye = line.point_end
+            line = pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255))
+            line.anchor_position = (0, 0)
+            self.sensors_lines.append(line)
+
+
+    def __fill_body_sides(self):
+        self.body_sides = [
+            Line((-self.width // 2 + self.x, -self.height // 4 + self.y),
+                 (self.width // 2 + self.x, -self.height // 4 + self.y)),
+            Line((-self.width // 2 + self.x, -self.height // 4 + self.y),
+                 (-self.width // 2 + self.x, self.height * 3 // 4 + self.y)),
+            Line((self.width // 2 + self.x, self.height * 3 // 4 + self.y),
+                 (self.width // 2 + self.x, -self.height // 4 + self.y)),
+            Line((-self.width // 2 + self.x, self.height * 3 // 4 + self.y),
+                 (self.width // 2 + self.x, self.height * 3 // 4 + self.y))
         ]
 
     def draw(self):
         self.body.draw()
 
-        for line in self.body_sides:
-            xs, ys = line.point_start
-            xe, ye = line.point_end
-            edge = pyglet.shapes.Line(xs + self.x, ys + self.y, xe + self.x, ye + self.y, width=1, color=(255, 255, 0))
-            edge.draw()
+        for line in self.sensors_lines:
+            line.draw()
+
+        # for line in self.sensors:
+        #     xs, ys = line.point_start
+        #     xe, ye = line.point_end
+        #     line = pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255))
+        #
+        #     line.draw()
+        #     line.delete()
 
     def move(self, ds):
         self.ds = ds
@@ -143,21 +167,11 @@ class Car:
 
     def rot_body_point(self, angle):
         for line in self.body_sides:
-            line.rot(angle)
+            line.rot(angle, (self.x, self.y))
 
-    def rot_sensor_point(self, cos, sin):
-        sensor_point = []
-
-        for point in self.sensors:
-            sx, sy = point[0]
-            ex, ey = point[1]
-            tsx = sx * cos - sy * sin
-            tsy = sx * sin + sy * cos
-            tex = ex * cos - ey * sin
-            tey = ex * sin + ey * cos
-            sensor_point.append(((tsx, tsy), (tex, tey)))
-
-        self.sensors = sensor_point
+    def rot_sensor_point(self, angle):
+        for sensor in self.sensors:
+            sensor.rot(angle, (self.x, self.y))
 
     def handbrake_stop(self):
         self.ds = 0
@@ -177,10 +191,8 @@ class Car:
             if self.ds == 0:
                 self.speed -= sign(self.speed) * self.grip
 
-            cos = math.cos(math.radians(da))
-            sin = math.sin(math.radians(da))
-
             self.rot_body_point(da)
+            self.rot_sensor_point(da)
             # self.rot_sensor_point(cos, sin)
 
         # if sign(da) != sign(self.angle):
@@ -223,6 +235,17 @@ class Car:
 
         self.x += self.dx
         self.y += self.dy
+
+        for side in self.body_sides:
+            side.move(self.dx, self.dy)
+
+        for line in self.sensors:
+            line.move(self.dx, self.dy)
+
+        for line in self.sensors_lines:
+            line.x += self.dx
+            line.y += self.dy
+            line.rotation = -self.angle
 
         self.body.x = self.x  # + (self.width - tx) * 0.5
         self.body.y = self.y  # + (self.height - ty) * 0.5
