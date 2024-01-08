@@ -30,7 +30,7 @@ cars = [
     # Car(25, 10, drift_control=0.75, color=PURPLE),
     # Car(25, 10, drift_control=0.5, color=RED),
     # Car(25, 10, drift_control=0.25, color=BLUE),
-    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100)
+    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
 ]
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)

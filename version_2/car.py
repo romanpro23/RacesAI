@@ -43,6 +43,7 @@ class Car:
 
     body: shapes.Rectangle
     sensors_lines: list
+    sensors_points: list
 
     def __init__(self,
                  height,
@@ -119,6 +120,7 @@ class Car:
         for line in self.sensors:
             line.move(self.x, self.y)
 
+        self.sensors_points = []
         self.sensors_lines = []
         for line in self.sensors:
             xs, ys = line.point_start
@@ -143,16 +145,18 @@ class Car:
     def draw(self):
         self.body.draw()
 
-        for line in self.sensors_lines:
-            line.draw()
-
         # for line in self.sensors:
         #     xs, ys = line.point_start
         #     xe, ye = line.point_end
         #     line = pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255))
         #
         #     line.draw()
-        #     line.delete()
+
+        for point in self.sensors_points:
+            x, y = point
+            p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
+            p.draw()
+            # line.delete()
 
     def move(self, ds):
         self.ds = ds

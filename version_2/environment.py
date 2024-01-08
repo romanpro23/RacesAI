@@ -25,13 +25,15 @@ class Environment:
 
         self.lines = []
         self.lines_batch = pyglet.graphics.Batch()
+        self.sensor_points = []
         self.__fill_lines()
 
     def __fill_lines(self):
         for line in self.frames:
             xs, ys = line.point_start
             xe, ye = line.point_end
-            self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255), batch=self.lines_batch))
+            self.lines.append(
+                pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255), batch=self.lines_batch))
 
         for line in self.rewards:
             xs, ys = line.point_start
@@ -43,11 +45,12 @@ class Environment:
         self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
 
     def draw(self):
-        self.lines_batch.draw()
-        # for line in self.lines:
-        #     line.draw()
+        return
+        # self.lines_batch.draw()
 
     def check(self, car: Car):
+        print(self.get_state(car))
+
         for line in self.frames:
             for side in car.body_sides:
                 point = line.check_intersection(side)
@@ -55,41 +58,30 @@ class Environment:
                     return True
         return False
 
-    def get_state(self, car):
-        reward = 0.0
-        state = []
+    def get_state(self, car: Car):
+        stage = []
+        sensor_points = []
+        for point in self.sensor_points:
+            # point.delete()
+            self.sensor_points.remove(point)
 
         for sensor in car.sensors:
-            sx, sy = sensor[0]
-            ex, ey = sensor[1]
+            points = []
+            stage_points = []
+            for line in self.frames:
+                point = sensor.check_intersection(line)
+                if point is not None:
+                    points.append(point)
+                    xs, ys = sensor.point_start
+                    xc, yc = point
+                    stage_points.append(math.sqrt((xc - xs) ** 2 + (yc - ys) ** 2) / car.length_sensor)
 
-            state_point = 1
-
-            l = ex - sx
-            m = ey - sy
-            st = 0
-            if ey - sy != 0:
-                et = (ey - sy) / m
+            if len(points) != 0:
+                min_value = min(stage_points)
+                stage.append(min_value)
+                sensor_points.append(points[stage_points.index(min_value)])
             else:
-                et = (ex - sx) / l
-            dt = et / car.length_sensor
+                stage.append(1.0)
 
-            for t in np.arange(st, et, dt):
-                x = sx + l * t
-                y = sy + m * t
-                tx = int(x + car.x)
-                ty = int(y + car.y)
-
-                if self.map[-ty][tx] == 1:
-                    reward += 1.0 / car.length_sensor
-                    self.map[-ty][tx] = 0.5
-                elif self.map[-ty][tx] == 0:
-                    state_point = math.sqrt((y - sy) ** 2 + (x - sx) ** 2) / \
-                                  math.sqrt((ey - sy) ** 2 + (ex - sx) ** 2)
-                    break
-
-            state.append(state_point)
-
-        state.append(car.speed / car.max_speed)
-
-        return state, reward
+        car.sensors_points = sensor_points
+        return stage
