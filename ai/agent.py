@@ -1,5 +1,5 @@
-from brain import *
-from model import *
+from ai.brain import *
+from ai.model import *
 import torch
 
 

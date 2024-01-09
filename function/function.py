@@ -22,7 +22,7 @@ class Line:
 
     a: float
     b: float
-    horizontal: bool
+    vertical: bool
 
     def __init__(self, point_start, point_end):
         self.point_end = point_end
@@ -35,9 +35,9 @@ class Line:
         xe, ye = self.point_end
 
         if xe == xs:
-            self.horizontal = True
+            self.vertical = True
         else:
-            self.horizontal = False
+            self.vertical = False
             self.a = (ye - ys) / (xe - xs)
             self.b = ye - self.a * xe
 
@@ -66,15 +66,14 @@ class Line:
         xe1, ye1 = self.point_end
         xe2, ye2 = line.point_end
 
-        if self.horizontal or line.horizontal:
-            if self.horizontal and min(xs2, xe2) <= xs1 <= max(xs2, xe2) and min(ys2, ye2) <= ys1 <= max(ys2, ye2):
-                    y = line.a * xs1 + line.b
-                    return (xs1, y)
-            elif line.horizontal and min(xs1, xe1) <= xs2 <= max(xs1, xe1) and min(ys1, ye1) <= ys2 <= max(ys1, ye1):
-                    y = self.a * xs2 + self.b
-                    return (xs2, y)
-            else:
-                return None
+        if self.vertical or line.vertical:
+            if self.vertical and min(xs2, xe2) <= xs1 <= max(xs2, xe2):
+                y = line.a * xs1 + line.b
+                return (xs1, y) if min(ys1, ye1) <= y <= max(ys1, ye1) else None
+            elif line.vertical and min(xs1, xe1) <= xs2 <= max(xs1, xe1):
+                y = self.a * xs2 + self.b
+                return (xs2, y) if min(ys2, ye2) <= y <= max(ys2, ye2) else None
+            return None
 
         if self.a != line.a:
             x = (line.b - self.b) / (self.a - line.a)

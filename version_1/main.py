@@ -4,7 +4,7 @@ import numpy as np
 
 from background import Background
 from environment import Environment
-from function import *
+from math.function import *
 
 from version_1.car import Car
 

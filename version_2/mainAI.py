@@ -2,6 +2,7 @@ import pyglet
 from PIL import Image
 import numpy as np
 
+from ai.agent import Agent
 from version_2.background import Background
 from version_2.environment import Environment
 from function.function import *
@@ -35,6 +36,8 @@ cars = [
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
+agent = Agent(epsilon_decay=0.995, action_size=5)
+
 direction = {
     "up": False,
     "down": False,
@@ -46,13 +49,64 @@ direction = {
 counter = 0
 fps_check = 3
 
+pre_state: np.array = None
+pre_reward: np.array
+pre_action: np.array
+epoch = 0
+
+def agent_action():
+    global pre_state
+    global pre_reward
+    global pre_action
+
+    direction["up"] = False
+    direction["down"] = False
+    direction["left"] = False
+    direction["right"] = False
+    direction["stop"] = False
+
+    state = environment.get_state(cars[0])
+    reward = environment.get_reward(cars[0])
+    action = agent.action(state)
+
+    if action == 0:
+        direction["up"] = True
+    elif action == 1:
+        direction["down"] = True
+    elif action == 2:
+        direction["left"] = True
+    elif action == 3:
+        direction["right"] = True
+    elif action == 4:
+        direction["stop"] = True
+
+    if pre_state is not None:
+        # print(pre_reward)
+        agent.update(pre_state, pre_action, pre_reward, state, 0)
+        if pre_reward != 0:
+            print(pre_state, pre_action, pre_reward, state, 0)
+        # agent.train(64, update_epsilon=True)
+
+    pre_state = state
+    pre_reward = np.array(reward)
+    pre_action = np.array(action)
+
 def update(dt):
-    global counter
+    global counter, environment
+    global epoch
+    agent_action()
+
     for car in cars:
         if environment.check(car):
-            car.body.color = (0, 0, 0)
-        else:
-            car.body.color = (255, 0, 0)
+            agent.update(pre_state, pre_action, np.array(-100), pre_state, 1)
+            print(pre_state, pre_action, np.array(-100), pre_state, 1)
+            agent.train(1024, update_epsilon=True)
+
+            epoch += 1
+            print(epoch, agent.brain.epsilon, len(agent.brain.memory))
+
+            environment = Environment(generator.frames, generator.rewards, generator.finish)
+            car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100)
         car.update()
 
     if direction["stop"] or (direction["up"] and direction["down"]):

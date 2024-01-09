@@ -14,8 +14,7 @@ class Background:
         self.map = np.array(img).clip(0, 1)
 
     def draw(self):
-        return
-        # self.image.blit(0, 0)
+        self.image.blit(0, 0)
 
     def check(self, car):
         return

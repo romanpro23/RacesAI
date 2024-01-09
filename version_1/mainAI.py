@@ -3,11 +3,12 @@ from PIL import Image
 import numpy as np
 
 from background import Background
+from math.function import RED
 from version_1.environment import Environment
-from function import *
+from math.function import *
 
 from version_1.car import Car
-from agent import Agent
+from ai.agent import Agent
 
 screen = pyglet.canvas.get_display().get_default_screen()
 screen_width, screen_height = screen.width, screen.height

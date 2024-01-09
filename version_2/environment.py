@@ -1,12 +1,5 @@
-import math
-
-import numpy as np
-import pyglet
-from PIL import Image
-import json
-
 from version_2.car import *
-from function import *
+from function.function import *
 
 
 class Environment:
@@ -40,17 +33,15 @@ class Environment:
             xe, ye = line.point_end
             self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(0, 255, 0), batch=self.lines_batch))
 
-        xs, ys = self.finish.point_start
-        xe, ye = self.finish.point_end
-        self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
+        # xs, ys = self.finish.point_start
+        # xe, ye = self.finish.point_end
+        # self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
 
     def draw(self):
         return
         # self.lines_batch.draw()
 
     def check(self, car: Car):
-        print(self.get_state(car))
-
         for line in self.frames:
             for side in car.body_sides:
                 point = line.check_intersection(side)
@@ -85,3 +76,16 @@ class Environment:
 
         car.sensors_points = sensor_points
         return stage
+
+    def get_reward(self, car: Car):
+        for side in car.body_sides:
+            if side.check_intersection(self.finish) is not None and not self.lines:
+                return -10
+
+        for side in car.body_sides:
+            for line in self.rewards:
+                if side.check_intersection(line) is not None:
+                    self.rewards.remove(line)
+                    return 10
+
+        return 0

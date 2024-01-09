@@ -1,6 +1,6 @@
 import json
 
-from function import Line
+from function.function import Line
 
 
 class Generator:

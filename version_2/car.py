@@ -1,9 +1,7 @@
 import pyglet
 from pyglet import shapes
-from function import *
+from function.function import *
 import math
-import numpy as np
-import random
 
 
 class Car:
@@ -227,9 +225,9 @@ class Car:
         #         self.drift_speed / self.drift_max_speed)
         # print(f"angle {self.angle}")
         cos = math.cos(math.radians(self.angle))
-        # cos_a = math.cos(math.radians(90 - self.angle))
+        # cos_a = function.cos(function.radians(90 - self.angle))
         sin = math.sin(math.radians(self.angle))
-        # sin_a = math.sin(math.radians(90 - self.angle))
+        # sin_a = function.sin(function.radians(90 - self.angle))
 
         self.dx = -self.speed * sin
         self.dy = self.speed * cos
