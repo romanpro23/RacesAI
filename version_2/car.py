@@ -150,11 +150,11 @@ class Car:
         #
         #     line.draw()
 
-        for point in self.sensors_points:
-            x, y = point
-            p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
-            p.draw()
-            # line.delete()
+        # for point in self.sensors_points:
+        #     x, y = point
+        #     p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
+        #     p.draw()
+        #     line.delete()
 
     def move(self, ds):
         self.ds = ds

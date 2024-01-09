@@ -24,7 +24,7 @@ window.set_location(x, y)
 generator = Generator("maps/map_1.txt", window_width, window_height)
 background = Background("maps/background_1.png")
 
-fps = 60
+fps = 600
 x, y = generator.start_point
 cars = [
     # Car(25, 10, drift_control=1, color=GREEN),
@@ -36,7 +36,7 @@ cars = [
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
-agent = Agent(epsilon_decay=0.995, action_size=5)
+agent = Agent(epsilon_decay=0.99, action_size=5)
 
 direction = {
     "up": False,
@@ -50,8 +50,8 @@ counter = 0
 fps_check = 3
 
 pre_state: np.array = None
-pre_reward: np.array
-pre_action: np.array
+pre_reward: np.array = 0
+pre_action: np.array = 0
 epoch = 0
 
 def agent_action():
@@ -94,10 +94,13 @@ def agent_action():
 def update(dt):
     global counter, environment
     global epoch
+    global pre_state
     agent_action()
 
     for car in cars:
-        if environment.check(car):
+        if not environment.check(car):
+            car.update()
+        else:
             agent.update(pre_state, pre_action, np.array(-100), pre_state, 1)
             print(pre_state, pre_action, np.array(-100), pre_state, 1)
             agent.train(1024, update_epsilon=True)
@@ -106,8 +109,10 @@ def update(dt):
             print(epoch, agent.brain.epsilon, len(agent.brain.memory))
 
             environment = Environment(generator.frames, generator.rewards, generator.finish)
-            car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100)
-        car.update()
+            cars.remove(car)
+            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100))
+            pre_state = None
+
 
     if direction["stop"] or (direction["up"] and direction["down"]):
         for car in cars: car.handbrake_stop()

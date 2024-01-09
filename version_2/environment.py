@@ -13,7 +13,7 @@ class Environment:
 
     def __init__(self, frames_sides, reward_lines, finish):
         self.frames = frames_sides
-        self.rewards = reward_lines
+        self.rewards = list(reward_lines)
         self.finish = finish
 
         self.lines = []
@@ -33,13 +33,12 @@ class Environment:
             xe, ye = line.point_end
             self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(0, 255, 0), batch=self.lines_batch))
 
-        # xs, ys = self.finish.point_start
-        # xe, ye = self.finish.point_end
-        # self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
+        xs, ys = self.finish.point_start
+        xe, ye = self.finish.point_end
+        self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
 
     def draw(self):
-        return
-        # self.lines_batch.draw()
+        self.lines_batch.draw()
 
     def check(self, car: Car):
         for line in self.frames:
@@ -47,6 +46,10 @@ class Environment:
                 point = line.check_intersection(side)
                 if point is not None:
                     return True
+
+        for side in car.body_sides:
+            if side.check_intersection(self.finish) is not None and self.lines:
+                return True
         return False
 
     def get_state(self, car: Car):
@@ -74,18 +77,18 @@ class Environment:
             else:
                 stage.append(1.0)
 
+        if car.speed > 0:
+            stage.append(car.speed / car.max_speed)
+        else:
+            stage.append(car.speed / car.max_back_speed)
+
         car.sensors_points = sensor_points
         return stage
 
     def get_reward(self, car: Car):
         for side in car.body_sides:
-            if side.check_intersection(self.finish) is not None and not self.lines:
-                return -10
-
-        for side in car.body_sides:
             for line in self.rewards:
                 if side.check_intersection(line) is not None:
                     self.rewards.remove(line)
                     return 10
-
         return 0
