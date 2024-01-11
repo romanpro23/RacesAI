@@ -1,3 +1,5 @@
+import random
+
 import pyglet
 from PIL import Image
 import numpy as np
@@ -24,19 +26,15 @@ window.set_location(x, y)
 generator = Generator("maps/map_1.txt", window_width, window_height)
 background = Background("maps/background_1.png")
 
-fps = 600
+fps = 120
 x, y = generator.start_point
 cars = [
-    # Car(25, 10, drift_control=1, color=GREEN),
-    # Car(25, 10, drift_control=0.75, color=PURPLE),
-    # Car(25, 10, drift_control=0.5, color=RED),
-    # Car(25, 10, drift_control=0.25, color=BLUE),
-    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100)
+    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
 ]
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
-agent = Agent(epsilon_decay=0.99, action_size=5)
+agent = Agent(epsilon_decay=0.999, action_size=5)
 
 direction = {
     "up": False,
@@ -47,28 +45,21 @@ direction = {
 }
 
 counter = 0
-fps_check = 3
+reward: np.array = None
 
-pre_state: np.array = None
-pre_reward: np.array = 0
-pre_action: np.array = 0
 epoch = 0
+total_score = 0
 
-def agent_action():
-    global pre_state
-    global pre_reward
-    global pre_action
 
+def clear_direction():
     direction["up"] = False
     direction["down"] = False
     direction["left"] = False
     direction["right"] = False
     direction["stop"] = False
 
-    state = environment.get_state(cars[0])
-    reward = environment.get_reward(cars[0])
-    action = agent.action(state)
 
+def change_direction(action):
     if action == 0:
         direction["up"] = True
     elif action == 1:
@@ -77,43 +68,59 @@ def agent_action():
         direction["left"] = True
     elif action == 3:
         direction["right"] = True
-    elif action == 4:
+    else:
         direction["stop"] = True
 
-    if pre_state is not None:
-        # print(pre_reward)
-        agent.update(pre_state, pre_action, pre_reward, state, 0)
-        if pre_reward != 0:
-            print(pre_state, pre_action, pre_reward, state, 0)
-        # agent.train(64, update_epsilon=True)
 
-    pre_state = state
-    pre_reward = np.array(reward)
-    pre_action = np.array(action)
+def agent_action(car):
+    global reward
+    global counter
+    global total_score
 
-def update(dt):
-    global counter, environment
-    global epoch
-    global pre_state
-    agent_action()
+    clear_direction()
 
-    for car in cars:
-        if not environment.check(car):
-            car.update()
+    state = environment.get_state(car)
+    action = agent.action(state)
+
+    change_direction(action)
+    reward = environment.get_reward(car)
+
+    if reward is not None:
+        total_score += reward
+
+        if reward == 0:
+            reward = -0.1 * (counter / fps)
+            counter += 1
+            if reward <= -1:
+                return restart(-1, car)
+        elif reward == 20:
+            return restart(20, car)
         else:
-            agent.update(pre_state, pre_action, np.array(-100), pre_state, 1)
-            print(pre_state, pre_action, np.array(-100), pre_state, 1)
-            agent.train(1024, update_epsilon=True)
+            counter = 0
 
-            epoch += 1
-            print(epoch, agent.brain.epsilon, len(agent.brain.memory))
-
-            environment = Environment(generator.frames, generator.rewards, generator.finish)
-            cars.remove(car)
-            cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=100))
-            pre_state = None
+        agent.update(reward, state, 0)
+        agent.train(32, update_epsilon=True)
 
 
+def restart(last_reward, car):
+    global counter, environment, epoch, total_score
+    global reward
+
+    reward = None
+    epoch += 1
+    print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score)
+    total_score = 0
+    counter = 0
+
+    agent.update(np.array(last_reward), None, 1)
+    # agent.train(1024, update_epsilon=True)
+
+    environment = Environment(generator.frames, generator.rewards, generator.finish)
+    cars.remove(car)
+    cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200))
+
+
+def direction_update():
     if direction["stop"] or (direction["up"] and direction["down"]):
         for car in cars: car.handbrake_stop()
     elif direction["up"]:
@@ -131,6 +138,21 @@ def update(dt):
         for car in cars: car.rot(1)
 
 
+def update(dt):
+    global counter, environment
+    global epoch
+
+    for car in cars:
+        agent_action(car)
+
+        if not environment.check(car):
+            car.update()
+        else:
+            restart(-10, car)
+
+    direction_update()
+
+
 @window.event
 def on_draw():
     window.clear()
@@ -139,8 +161,6 @@ def on_draw():
 
     for car in cars:
         car.draw()
-        # environment.get_reward(car)
-        # print(environment.get_state(car))
 
 
 @window.event

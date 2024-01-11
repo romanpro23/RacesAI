@@ -46,9 +46,11 @@ direction = {
 counter = 0
 fps_check = 3
 
+
 def update(dt):
     global counter
     for car in cars:
+        environment.get_state(car)
         if environment.check(car):
             car.body.color = (0, 0, 0)
         else:

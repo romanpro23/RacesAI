@@ -58,7 +58,7 @@ class Brain:
         loss.backward()
         self.optimizer.step()
 
-        if len(batch) != 1 and self.epsilon > self.epsilon_min and update_epsilon:
+        if self.epsilon > self.epsilon_min and update_epsilon:
             self.epsilon = max(self.epsilon_decay * self.epsilon, self.epsilon_min)
 
     def action(self, state):

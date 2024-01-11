@@ -48,16 +48,13 @@ class Environment:
                     return True
 
         for side in car.body_sides:
-            if side.check_intersection(self.finish) is not None and self.lines:
+            if side.check_intersection(self.finish) is not None and self.rewards:
                 return True
         return False
 
     def get_state(self, car: Car):
         stage = []
         sensor_points = []
-        for point in self.sensor_points:
-            # point.delete()
-            self.sensor_points.remove(point)
 
         for sensor in car.sensors:
             points = []
@@ -86,6 +83,10 @@ class Environment:
         return stage
 
     def get_reward(self, car: Car):
+        for side in car.body_sides:
+            if side.check_intersection(self.finish) is not None and not self.rewards:
+                return 20
+
         for side in car.body_sides:
             for line in self.rewards:
                 if side.check_intersection(line) is not None:

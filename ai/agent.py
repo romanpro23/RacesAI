@@ -1,9 +1,14 @@
+import numpy as np
+
 from ai.brain import *
 from ai.model import *
 import torch
 
 
 class Agent:
+    __state: list
+    __action: int
+
     def __init__(self,
                  memory_size=50000,
                  action_size=5,
@@ -12,7 +17,7 @@ class Agent:
                  epsilon_min=0.01,
                  epsilon_decay=0.99
                  ):
-        self.brain = Brain(model=LinearModel(9, [256, 128, 64], action_size),
+        self.brain = Brain(model=LinearModel(9, [128, 64], action_size),
                            memory_size=memory_size,
                            action_size=action_size,
                            gamma=gamma,
@@ -22,10 +27,13 @@ class Agent:
                            )
 
     def action(self, inputs):
-        return self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
+        self.__state = inputs
+        self.__action = self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
 
-    def update(self, state, action, reward, next_state, done):
-        self.brain.remember(state, action, reward, next_state, done)
+        return self.__action
+
+    def update(self, reward, next_state, done):
+        self.brain.remember(self.__state, self.__action, reward, next_state, done)
 
     def train(self, batch_size=64, update_epsilon=False):
         self.brain.train(batch_size, update_epsilon)

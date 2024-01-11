@@ -154,7 +154,7 @@ class Car:
         #     x, y = point
         #     p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
         #     p.draw()
-        #     line.delete()
+            # line.delete()
 
     def move(self, ds):
         self.ds = ds
