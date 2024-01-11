@@ -34,7 +34,7 @@ cars = [
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
-agent = Agent(epsilon_decay=0.999, action_size=5)
+agent = Agent(epsilon_decay=0.99, action_size=5, epsilon_min=0.05)
 
 direction = {
     "up": False,
@@ -62,7 +62,7 @@ def clear_direction():
     direction["stop"] = False
 
 
-def change_direction(action):
+def change_direction():
     if action == 0:
         direction["up"] = True
     elif action == 1:
@@ -89,7 +89,7 @@ def agent_action(car):
         state = next_state
 
     action = agent.action(state)
-    change_direction(action)
+    change_direction()
 
     reward = environment.get_reward(car)
     next_state = environment.get_state(car)
@@ -99,16 +99,19 @@ def agent_action(car):
 
         if reward == 0:
             r = -0.1 * (counter / fps)
+            reward = 0.1 * r
             counter += 1
             if r <= -1:
+                counter = 0
                 return restart(-1, car)
-        elif reward == 20:
+        elif not environment.rewards:
+            counter = 0
             return restart(20, car)
         else:
             counter = 0
 
         agent.update(state, action, reward, next_state, 0)
-        agent.train(32, update_epsilon=True)
+        agent.train(32, update_epsilon=False)
 
 
 def restart(last_reward, car):
@@ -125,7 +128,7 @@ def restart(last_reward, car):
     reward = None
     state = None
     next_state = None
-    # agent.train(1024, update_epsilon=True)
+    agent.train(1024, update_epsilon=True)
 
     environment = Environment(generator.frames, generator.rewards, generator.finish)
     cars.remove(car)

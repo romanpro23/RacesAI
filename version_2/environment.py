@@ -14,6 +14,7 @@ class Environment:
     def __init__(self, frames_sides, reward_lines, finish):
         self.frames = frames_sides
         self.rewards = list(reward_lines)
+        self.reward = 8
         self.finish = finish
 
         self.lines = []
@@ -74,10 +75,10 @@ class Environment:
             else:
                 stage.append(1.0)
 
-        if car.speed > 0:
-            stage.append(car.speed / car.max_speed)
-        else:
-            stage.append(car.speed / car.max_back_speed)
+        # if car.speed > 0:
+        #     stage.append(car.speed / car.max_speed)
+        # else:
+        #     stage.append(car.speed / car.max_back_speed)
 
         car.sensors_points = sensor_points
         return stage
@@ -85,11 +86,12 @@ class Environment:
     def get_reward(self, car: Car):
         for side in car.body_sides:
             if side.check_intersection(self.finish) is not None and not self.rewards:
-                return 20
+                return self.reward * 2
 
         for side in car.body_sides:
             for line in self.rewards:
                 if side.check_intersection(line) is not None:
                     self.rewards.remove(line)
-                    return 10
+                    self.reward += 2
+                    return self.reward
         return 0
