@@ -6,8 +6,6 @@ import torch
 
 
 class Agent:
-    __state: list
-    __action: int
 
     def __init__(self,
                  memory_size=50000,
@@ -27,13 +25,10 @@ class Agent:
                            )
 
     def action(self, inputs):
-        self.__state = inputs
-        self.__action = self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
+        return self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
 
-        return self.__action
-
-    def update(self, reward, next_state, done):
-        self.brain.remember(self.__state, self.__action, reward, next_state, done)
+    def update(self, state, action, reward, next_state, done):
+        self.brain.remember(state, action, reward, next_state, done)
 
     def train(self, batch_size=64, update_epsilon=False):
         self.brain.train(batch_size, update_epsilon)

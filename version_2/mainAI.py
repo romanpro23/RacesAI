@@ -46,6 +46,9 @@ direction = {
 
 counter = 0
 reward: np.array = None
+state = None
+next_state = None
+action = None
 
 epoch = 0
 total_score = 0
@@ -76,43 +79,52 @@ def agent_action(car):
     global reward
     global counter
     global total_score
+    global state, next_state, action
 
     clear_direction()
 
-    state = environment.get_state(car)
-    action = agent.action(state)
+    if next_state is None:
+        state = environment.get_state(car)
+    else:
+        state = next_state
 
+    action = agent.action(state)
     change_direction(action)
+
     reward = environment.get_reward(car)
+    next_state = environment.get_state(car)
 
     if reward is not None:
         total_score += reward
 
         if reward == 0:
-            reward = -0.1 * (counter / fps)
+            r = -0.1 * (counter / fps)
             counter += 1
-            if reward <= -1:
+            if r <= -1:
                 return restart(-1, car)
         elif reward == 20:
             return restart(20, car)
         else:
             counter = 0
 
-        agent.update(reward, state, 0)
+        agent.update(state, action, reward, next_state, 0)
         agent.train(32, update_epsilon=True)
 
 
 def restart(last_reward, car):
     global counter, environment, epoch, total_score
-    global reward
+    global reward, state, action, next_state
 
-    reward = None
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score)
     total_score = 0
     counter = 0
 
-    agent.update(np.array(last_reward), None, 1)
+    agent.update(state, action, np.array(last_reward), next_state, 1)
+
+    reward = None
+    state = None
+    next_state = None
     # agent.train(1024, update_epsilon=True)
 
     environment = Environment(generator.frames, generator.rewards, generator.finish)
