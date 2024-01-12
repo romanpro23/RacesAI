@@ -98,20 +98,20 @@ def agent_action(car):
         total_score += reward
 
         if reward == 0:
-            r = -0.1 * (counter / fps)
-            reward = 0.1 * r
+            reward = -0.01 * (counter / fps)
             counter += 1
-            if r <= -1:
+            if reward <= -0.1:
                 counter = 0
-                return restart(-1, car)
+                return restart(reward, car)
         elif not environment.rewards:
             counter = 0
-            return restart(20, car)
+            return restart(environment.reward * 2, car)
         else:
             counter = 0
 
-        agent.update(state, action, reward, next_state, 0)
-        agent.train(32, update_epsilon=False)
+        if reward > 0 or random.random() > 0.9:
+            agent.update(state, action, reward, next_state, 0)
+            agent.train(32, update_epsilon=False)
 
 
 def restart(last_reward, car):
@@ -190,9 +190,12 @@ def on_key_press(symbol, modifiers):
         direction["right"] = True
     elif symbol == pyglet.window.key.SPACE:
         direction["stop"] = True
-    elif symbol == pyglet.window.key.Q:
-        image_pil = Image.fromarray(np.ceil(environment.map * 255).astype(np.uint8))
-        image_pil.save('output_image.png')
+    elif symbol == pyglet.window.key.R:
+        pyglet.clock.unschedule(update)
+        pyglet.clock.schedule_interval(update, 1.0 / 60)
+    elif symbol == pyglet.window.key.E:
+        pyglet.clock.unschedule(update)
+        pyglet.clock.schedule_interval(update, 1.0 / fps)
 
 
 @window.event

@@ -75,10 +75,10 @@ class Environment:
             else:
                 stage.append(1.0)
 
-        # if car.speed > 0:
-        #     stage.append(car.speed / car.max_speed)
-        # else:
-        #     stage.append(car.speed / car.max_back_speed)
+        if car.speed > 0:
+            stage.append(car.speed / car.max_speed)
+        else:
+            stage.append(car.speed / car.max_back_speed)
 
         car.sensors_points = sensor_points
         return stage
