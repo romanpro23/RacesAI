@@ -34,9 +34,12 @@ next_state = None
 epoch = 0
 total_score = 0
 
+counter = 0
+frequency_ai = 4
+
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
-agent = Agent(epsilon_decay=0.99, action_size=5, epsilon_min=0.05)
+agent = Agent(epsilon_decay=0.999, action_size=5, epsilon_min=0.02)
 
 direction = {
     "up": False,
@@ -85,6 +88,8 @@ def ai_action():
     reward, done = environment.get_reward(car)
     next_state = environment.get_state(car)
 
+    total_score += reward
+
     agent.update(state, action, reward, next_state, done)
     agent.train(64, update_epsilon=True)
 
@@ -94,13 +99,16 @@ def ai_action():
 
 
 def restart():
-    global total_score, epoch
+    global total_score, epoch, counter
     global environment
     global car
 
     epoch += 1
-    print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score)
+    print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score, counter)
+    agent.save(f"models/ai_{total_score}")
+
     total_score = 0
+    counter = 0
 
     environment = Environment(generator.frames, generator.rewards, generator.finish)
     car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
@@ -126,7 +134,13 @@ def direction_update():
 
 
 def update(dt):
-    ai_action()
+    global counter
+    global frequency_ai
+
+    if counter % frequency_ai == 0:
+        ai_action()
+    counter += 1
+
     car.update()
 
     direction_update()

@@ -14,7 +14,7 @@ class Environment:
     counter_action: int
     amount_inactivity: int
 
-    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=600):
+    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=1200):
         self.frames = frames_sides
         self.rewards = list(reward_lines)
         self.accumulated_reward = 1
@@ -111,7 +111,7 @@ class Environment:
 
         self.counter_action += 1
         if self.counter_action > self.amount_inactivity:
-            reward = -1
+            reward = -5
             done = True
             self.counter_action = 0
 

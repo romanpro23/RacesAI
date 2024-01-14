@@ -98,9 +98,6 @@ def on_key_press(symbol, modifiers):
         direction["right"] = True
     elif symbol == pyglet.window.key.SPACE:
         direction["stop"] = True
-    elif symbol == pyglet.window.key.Q:
-        image_pil = Image.fromarray(np.ceil(environment.map * 255).astype(np.uint8))
-        image_pil.save('output_image.png')
 
 
 @window.event
