@@ -28,9 +28,11 @@ background = Background("maps/background_1.png")
 
 fps = 120
 x, y = generator.start_point
-cars = [
-    Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
-]
+car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
+
+next_state = None
+epoch = 0
+total_score = 0
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
@@ -44,15 +46,6 @@ direction = {
     "stop": False
 }
 
-counter = 0
-reward: np.array = None
-state = None
-next_state = None
-action = None
-
-epoch = 0
-total_score = 0
-
 
 def clear_direction():
     direction["up"] = False
@@ -62,7 +55,7 @@ def clear_direction():
     direction["stop"] = False
 
 
-def change_direction():
+def change_direction(action: int):
     if action == 0:
         direction["up"] = True
     elif action == 1:
@@ -75,11 +68,9 @@ def change_direction():
         direction["stop"] = True
 
 
-def agent_action(car):
-    global reward
-    global counter
+def ai_action():
     global total_score
-    global state, next_state, action
+    global next_state
 
     clear_direction()
 
@@ -89,81 +80,54 @@ def agent_action(car):
         state = next_state
 
     action = agent.action(state)
-    change_direction()
+    change_direction(action)
 
-    reward = environment.get_reward(car)
+    reward, done = environment.get_reward(car)
     next_state = environment.get_state(car)
 
-    if reward is not None:
-        total_score += reward
+    agent.update(state, action, reward, next_state, done)
+    agent.train(64, update_epsilon=True)
 
-        if reward == 0:
-            reward = -0.01 * (counter / fps)
-            counter += 1
-            if counter >= fps * 10:
-                counter = 0
-                return restart(-10, car)
-        elif not environment.rewards:
-            counter = 0
-            return restart(environment.reward * 2, car)
-        else:
-            counter = 0
-
-        if reward > 0 or random.random() > 0.8:
-            agent.update(state, action, reward, next_state, 0)
-            agent.train(64, update_epsilon=False)
+    if done:
+        next_state = None
+        restart()
 
 
-def restart(last_reward, car):
-    global counter, environment, epoch, total_score
-    global reward, state, action, next_state
+def restart():
+    global total_score, epoch
+    global environment
+    global car
 
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score)
     total_score = 0
-    counter = 0
-
-    agent.update(state, action, np.array(last_reward), next_state, 1)
-
-    reward = None
-    state = None
-    next_state = None
-    agent.train(1024, update_epsilon=True)
 
     environment = Environment(generator.frames, generator.rewards, generator.finish)
-    cars.remove(car)
-    cars.append(Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200))
+    car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
 
 
 def direction_update():
+    global car
     if direction["stop"] or (direction["up"] and direction["down"]):
-        for car in cars: car.handbrake_stop()
+        car.handbrake_stop()
     elif direction["up"]:
-        for car in cars: car.move(1)
+        car.move(1)
     elif direction["down"]:
-        for car in cars: car.move(-1)
+        car.move(-1)
     else:
-        for car in cars: car.move(0)
+        car.move(0)
 
     if direction["left"] and direction["right"]:
-        for car in cars: car.rot(0)
+        car.rot(0)
     elif direction["left"]:
-        for car in cars: car.rot(-1)
+        car.rot(-1)
     elif direction["right"]:
-        for car in cars: car.rot(1)
+        car.rot(1)
 
 
 def update(dt):
-    global counter, environment
-    global epoch
-
-    for car in cars:
-        agent_action(car)
-
-        if not environment.check(car):
-            car.update()
-        else:
-            restart(-10, car)
+    ai_action()
+    car.update()
 
     direction_update()
 
@@ -171,11 +135,11 @@ def update(dt):
 @window.event
 def on_draw():
     window.clear()
+
     background.draw()
     environment.draw()
 
-    for car in cars:
-        car.draw()
+    car.draw()
 
 
 @window.event

@@ -3,7 +3,7 @@ from function.function import *
 
 
 class Environment:
-    reward: int
+    accumulated_reward: float
     frames: list
     rewards: list
     finish: Line
@@ -11,11 +11,17 @@ class Environment:
     lines: list
     lines_batch: pyglet.graphics.Batch
 
-    def __init__(self, frames_sides, reward_lines, finish):
+    counter_action: int
+    amount_inactivity: int
+
+    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=600):
         self.frames = frames_sides
         self.rewards = list(reward_lines)
-        self.reward = 8
+        self.accumulated_reward = 1
         self.finish = finish
+
+        self.counter_action = 0
+        self.amount_inactivity = amount_inactivity
 
         self.lines = []
         self.lines_batch = pyglet.graphics.Batch()
@@ -84,15 +90,29 @@ class Environment:
         return stage
 
     def get_reward(self, car: Car):
+        done = self.check(car)
+        reward = 0 if not done else -5
+
+        if not done:
+            for side in car.body_sides:
+                for line in self.rewards:
+                    if side.check_intersection(line) is not None:
+                        reward = self.accumulated_reward
+                        self.accumulated_reward += 0.05
+                        self.counter_action = 0
+
+                        self.rewards.remove(line)
+                        break
 
         for side in car.body_sides:
             if side.check_intersection(self.finish) is not None and not self.rewards:
-                return self.reward * 2
+                self.accumulated_reward = 0
+                reward = 5
 
-        for side in car.body_sides:
-            for line in self.rewards:
-                if side.check_intersection(line) is not None:
-                    self.rewards.remove(line)
-                    self.reward += 2
-                    return self.reward
-        return 0
+        self.counter_action += 1
+        if self.counter_action > self.amount_inactivity:
+            reward = -1
+            done = True
+            self.counter_action = 0
+
+        return reward, done
