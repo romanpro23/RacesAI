@@ -100,18 +100,18 @@ def agent_action(car):
         if reward == 0:
             reward = -0.01 * (counter / fps)
             counter += 1
-            if reward <= -0.1:
+            if counter >= fps * 10:
                 counter = 0
-                return restart(reward, car)
+                return restart(-10, car)
         elif not environment.rewards:
             counter = 0
             return restart(environment.reward * 2, car)
         else:
             counter = 0
 
-        if reward > 0 or random.random() > 0.9:
+        if reward > 0 or random.random() > 0.8:
             agent.update(state, action, reward, next_state, 0)
-            agent.train(32, update_epsilon=False)
+            agent.train(64, update_epsilon=False)
 
 
 def restart(last_reward, car):

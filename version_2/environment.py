@@ -84,6 +84,7 @@ class Environment:
         return stage
 
     def get_reward(self, car: Car):
+
         for side in car.body_sides:
             if side.check_intersection(self.finish) is not None and not self.rewards:
                 return self.reward * 2
