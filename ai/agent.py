@@ -9,7 +9,7 @@ class Agent:
 
     def __init__(self,
                  memory_size=50000,
-                 action_size=5,
+                 action_size=4,
                  gamma=0.9,
                  learning_rate=0.001,
                  epsilon_min=0.01,
