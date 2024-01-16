@@ -35,7 +35,6 @@ epoch = 0
 total_score = 0
 
 counter = 0
-frequency_ai = 4
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
@@ -114,7 +113,7 @@ def restart():
 
     next_state = None
     environment = Environment(generator.frames, generator.rewards, generator.finish)
-    car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
+    car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
 
 
 def direction_update():
@@ -138,15 +137,11 @@ def direction_update():
 
 def update(dt):
     global counter
-    global frequency_ai
 
-    if counter % frequency_ai == 0:
-        ai_action()
-    counter += 1
+    ai_action()
+    direction_update()
 
     car.update()
-
-    direction_update()
 
 
 @window.event
