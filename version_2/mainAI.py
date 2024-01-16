@@ -39,7 +39,7 @@ frequency_ai = 4
 
 environment = Environment(generator.frames, generator.rewards, generator.finish)
 
-agent = Agent(epsilon_decay=0.995, action_size=4, epsilon_min=0.02)
+agent = Agent(epsilon_decay=0.995, action_size=5, epsilon_min=0.02)
 
 direction = {
     "up": False,
@@ -55,6 +55,7 @@ def clear_direction():
     direction["down"] = False
     direction["left"] = False
     direction["right"] = False
+    direction["stop"] = False
 
 
 def change_direction(action: int):
@@ -66,6 +67,8 @@ def change_direction(action: int):
         direction["left"] = True
     elif action == 3:
         direction["right"] = True
+    else:
+        direction["stop"] = True
 
 
 def ai_action():

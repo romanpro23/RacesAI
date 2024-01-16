@@ -52,17 +52,25 @@ class Brain:
         # print("next_states", np.array(next_states))
         # print("done", np.array(done))
 
-        target = rewards + done * self.gamma * torch.max(self.model(next_states), dim=1).values
+        target = rewards + self.gamma * torch.max(self.model(next_states), dim=1).values
         target[done] = rewards[done]
+
+        # print("target", target)
 
         prediction = self.model(states)
         target_f = prediction.clone()
         target_f[range(len(batch)), actions] = target
 
-        loss = self.loss(prediction, target_f)
+        # print("prediction", prediction)
+        # print("target_f", target_f)
+
+        loss = self.loss(prediction, target_f.detach())
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+        prediction = self.model(states)
+        # print("prediction after ", prediction)
 
         if self.epsilon > self.epsilon_min and update_epsilon:
             self.epsilon = max(self.epsilon_decay * self.epsilon, self.epsilon_min)

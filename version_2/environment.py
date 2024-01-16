@@ -105,12 +105,13 @@ class Environment:
                         break
 
         for side in car.body_sides:
-            if side.check_intersection(self.finish) is not None and not self.rewards:
+            if side.check_intersection(self.finish) is not None and len(self.rewards) == 0:
                 self.accumulated_reward = 0
                 reward = 5
+                done = True
 
         self.counter_action += 1
-        if self.counter_action > self.amount_inactivity:
+        if self.counter_action > self.amount_inactivity and not done:
             reward = -5
             done = True
             self.counter_action = 0
