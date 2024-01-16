@@ -1,3 +1,4 @@
+import os
 import random
 
 import pyglet
@@ -106,6 +107,8 @@ def restart():
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score, counter)
     # agent.train(1024, update_epsilon=True)
+    if not os.path.exists("models"):
+        os.makedirs("models")
     agent.save(f"models/ai_{total_score}")
 
     total_score = 0
