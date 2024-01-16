@@ -102,6 +102,7 @@ def restart():
     global total_score, epoch, counter
     global environment
     global car
+    global next_state
 
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score, counter)
@@ -111,6 +112,7 @@ def restart():
     total_score = 0
     counter = 0
 
+    next_state = None
     environment = Environment(generator.frames, generator.rewards, generator.finish)
     car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=200)
 
