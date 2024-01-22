@@ -1,13 +1,11 @@
 import pyglet
-from PIL import Image
-import numpy as np
 
-from version_2.background import Background
-from version_2.environment import Environment
+from game.background import Background
+from game.environment import Environment
 from function.function import *
 
-from version_2.car import Car
-from version_2.level_generator import Generator
+from game.car import Car
+from game.level_generator import Generator
 
 screen = pyglet.canvas.get_display().get_default_screen()
 screen_width, screen_height = screen.width, screen.height

@@ -1,4 +1,4 @@
-from version_2.car import *
+from game.car import *
 from function.function import *
 
 
@@ -13,14 +13,16 @@ class Environment:
 
     counter_action: int
     amount_inactivity: int
+    reward_move: float
 
-    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=600):
+    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=600, reward_move=0.025):
         self.frames = frames_sides
         self.rewards = list(reward_lines)
         self.accumulated_reward = 1
         self.finish = finish
 
         self.counter_action = 0
+        self.reward_move = reward_move
         self.amount_inactivity = amount_inactivity
 
         self.lines = []
@@ -117,9 +119,9 @@ class Environment:
             self.counter_action = 0
 
         if reward == 0:
-            if car.speed < 0:
-                reward = -0.01
-            elif car.speed > 0:
-                reward = 0.01
+            if car.speed > 0:
+                reward = self.reward_move
+            elif car.speed < 0:
+                reward = -self.reward_move
 
         return reward, done

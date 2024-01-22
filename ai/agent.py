@@ -7,8 +7,10 @@ import torch
 
 class Agent:
 
+    state: list
+
     def __init__(self,
-                 memory_size=50000,
+                 memory_size=10000,
                  action_size=4,
                  gamma=0.9,
                  learning_rate=0.001,
@@ -25,6 +27,8 @@ class Agent:
                            )
 
     def action(self, inputs):
+        self.state = inputs
+        self.a
         return self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
 
     def update(self, state, action, reward, next_state, done):

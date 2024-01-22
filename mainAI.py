@@ -1,17 +1,14 @@
 import os
-import random
 
 import pyglet
-from PIL import Image
-import numpy as np
 
 from ai.agent import Agent
-from version_2.background import Background
-from version_2.environment import Environment
+from game.background import Background
+from game.environment import Environment
 from function.function import *
 
-from version_2.car import Car
-from version_2.level_generator import Generator
+from game.car import Car
+from game.level_generator import Generator
 
 screen = pyglet.canvas.get_display().get_default_screen()
 screen_width, screen_height = screen.width, screen.height
@@ -36,8 +33,9 @@ epoch = 0
 total_score = 0
 
 counter = 0
+frequency_ai = 2
 
-environment = Environment(generator.frames, generator.rewards, generator.finish)
+environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0, amount_inactivity=400)
 
 agent = Agent(epsilon_decay=0.995, action_size=5, epsilon_min=0.02)
 
@@ -68,7 +66,7 @@ def change_direction(action: int):
     elif action == 3:
         direction["right"] = True
     else:
-        direction["stop"] = True
+        direction["stop "] = True
 
 
 def ai_action():
@@ -107,15 +105,15 @@ def restart():
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score, counter)
     # agent.train(1024, update_epsilon=True)
-    if not os.path.exists("models"):
-        os.makedirs("models")
+    if not os.path.exists("../models"):
+        os.makedirs("../models")
     agent.save(f"models/ai_{total_score}")
 
     total_score = 0
     counter = 0
 
     next_state = None
-    environment = Environment(generator.frames, generator.rewards, generator.finish)
+    environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.1, amount_inactivity=400)
     car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
 
 
@@ -141,9 +139,11 @@ def direction_update():
 def update(dt):
     global counter
 
-    ai_action()
-    direction_update()
+    if counter % frequency_ai == 0:
+        ai_action()
+    counter += 1
 
+    direction_update()
     car.update()
 
 
