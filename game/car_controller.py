@@ -1,3 +1,5 @@
+import os
+
 from ai.agent import Agent
 from game.car import Car
 from game.environment import Environment
@@ -108,6 +110,7 @@ class CarController:
 
     def ai_action(self, environment):
         if not self.counter % self.frequency_ai == 0:
+            self.counter += 1
             return
 
         self.counter += 1
@@ -117,20 +120,43 @@ class CarController:
 
         action = self.agent.action(state)
 
-        if action == 1:
-            action
+        if action == 0:
+            action = "up"
+        elif action == 1:
+            action = "down"
+        elif action == 2:
+            action = "left"
+        elif action == 3:
+            action = "right"
+        else:
+            action = "stop"
 
         self.change_direction(action)
 
-        reward, done = environment.get_reward(car)
-        next_state = environment.get_state(car)
+        reward, done = environment.get_reward(self.car)
+        next_state = environment.get_state(self.car)
 
-        total_score += reward
+        self.total_score += reward
 
-        agent.update(state, action, reward, next_state, done)
-        agent.train(64, update_epsilon=True)
+        self.agent.state = next_state
+        self.agent.update(state, action, reward, next_state, done)
+        self.agent.train(64, update_epsilon=True)
 
         if done:
             next_state = None
             restart()
 
+    def restart(self):
+        print(self.total_score, self.counter)
+        # agent.train(1024, update_epsilon=True)
+        if not os.path.exists("/models"):
+            os.makedirs("/models")
+        self.agent.save(f"models/ai_{self.total_score}")
+
+        self.total_score = 0
+        self.counter = 0
+
+        self.agent.state = None
+        environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.1,
+                                  amount_inactivity=400)
+        car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)

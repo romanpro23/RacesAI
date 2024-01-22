@@ -27,8 +27,6 @@ class Agent:
                            )
 
     def action(self, inputs):
-        self.state = inputs
-        self.a
         return self.brain.action(torch.unsqueeze(torch.tensor(inputs), 0))
 
     def update(self, state, action, reward, next_state, done):
