@@ -26,7 +26,8 @@ background = Background("maps/background_1.png")
 
 fps = 120
 x, y = generator.start_point
-car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
+car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, length_sensor=150)
+car.set_coordinate(x=x, y=y)
 
 next_state = None
 epoch = 0
@@ -105,8 +106,8 @@ def restart():
     epoch += 1
     print(epoch, agent.brain.epsilon, len(agent.brain.memory), total_score, counter)
     # agent.train(1024, update_epsilon=True)
-    if not os.path.exists("../models"):
-        os.makedirs("../models")
+    if not os.path.exists("models"):
+        os.makedirs("models")
     agent.save(f"models/ai_{total_score}")
 
     total_score = 0
@@ -114,8 +115,8 @@ def restart():
 
     next_state = None
     environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.1, amount_inactivity=400)
-    car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
-
+    car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, length_sensor=150)
+    car.set_coordinate(x=x, y=y)
 
 def direction_update():
     global car

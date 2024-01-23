@@ -9,6 +9,7 @@ class CarController:
     car: Car
     ai: bool
     agent: Agent
+    action: int
 
     car_parameters: dict
     frequency_ai: int
@@ -24,15 +25,18 @@ class CarController:
         "stop": False
     }
 
-    def __init__(self, car: Car, ai: bool = False, agent: Agent = None, frequency_ai: int = 0):
-        self.ai = True if agent is not None else ai
+    def __init__(self, car: Car, agent: Agent = None, frequency_ai: int = 0):
+        self.ai = True if agent is not None else False
         self.frequency_ai = frequency_ai
 
         self.counter = 0
         self.total_score = 0
+        self.action = 0
 
         self.agent = agent
         self.car = car
+
+        self.__fill_car_parameters(car)
 
     def change_direction(self, direction: str, value: bool = False):
         self.directions[direction] = value
@@ -101,14 +105,24 @@ class CarController:
         elif self.directions["right"]:
             self.car.rot(1)
 
-    def update(self, environment: Environment):
+    def make_action(self, state):
         if self.ai:
-            self.ai_action(environment)
+            self.ai_action(state)
 
+    def update(self, state, reward, done, next_state=None):
         self.__direction_update()
         self.car.update()
 
-    def ai_action(self, environment):
+        self.total_score += reward
+
+        if self.ai:
+            self.agent.update(state, self.action, reward, next_state, done)
+            self.agent.train(64, update_epsilon=True)
+
+        if done:
+            self.restart()
+
+    def ai_action(self, state):
         if not self.counter % self.frequency_ai == 0:
             self.counter += 1
             return
@@ -116,47 +130,34 @@ class CarController:
         self.counter += 1
         self.clear_directions()
 
-        state = environment.get_state(self.car) if self.agent.state is None else self.agent.state
+        self.action = self.agent.action(inputs=state)
+        self.change_direction(self.get_str_action(self.action), True)
 
-        action = self.agent.action(state)
-
-        if action == 0:
+    @staticmethod
+    def get_str_action(code_action):
+        action = "stop"
+        if code_action == 0:
             action = "up"
-        elif action == 1:
+        elif code_action == 1:
             action = "down"
-        elif action == 2:
+        elif code_action == 2:
             action = "left"
-        elif action == 3:
+        elif code_action == 3:
             action = "right"
-        else:
-            action = "stop"
-
-        self.change_direction(action)
-
-        reward, done = environment.get_reward(self.car)
-        next_state = environment.get_state(self.car)
-
-        self.total_score += reward
-
-        self.agent.state = next_state
-        self.agent.update(state, action, reward, next_state, done)
-        self.agent.train(64, update_epsilon=True)
-
-        if done:
-            next_state = None
-            restart()
+        return action
 
     def restart(self):
         print(self.total_score, self.counter)
-        # agent.train(1024, update_epsilon=True)
-        if not os.path.exists("/models"):
-            os.makedirs("/models")
-        self.agent.save(f"models/ai_{self.total_score}")
+        if self.ai:
+            if not os.path.exists("/models"):
+                os.makedirs("/models")
+            self.agent.save(f"models/ai_{self.total_score}")
 
         self.total_score = 0
         self.counter = 0
 
-        self.agent.state = None
-        environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.1,
-                                  amount_inactivity=400)
-        car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, x=x, y=y, length_sensor=150)
+        self.clear_directions()
+        self.__restart_car()
+
+    def draw(self):
+        self.car.draw()

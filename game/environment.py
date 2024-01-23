@@ -47,7 +47,8 @@ class Environment:
         self.lines.append(pyglet.shapes.Line(xs, ys, xe, ye, width=4, color=(255, 255, 0), batch=self.lines_batch))
 
     def draw(self):
-        self.lines_batch.draw()
+        pass
+        # self.lines_batch.draw()
 
     def check(self, car: Car):
         for line in self.frames:

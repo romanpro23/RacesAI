@@ -6,9 +6,6 @@ import torch
 
 
 class Agent:
-
-    state: list
-
     def __init__(self,
                  memory_size=10000,
                  action_size=4,

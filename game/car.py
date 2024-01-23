@@ -96,30 +96,14 @@ class Car:
 
         self.length_sensor = length_sensor
         self.__fill_body_sides()
-
-        length_sensor_45 = length_sensor / math.sqrt(2)
-        self.sensors = [
-            Line((-self.width // 2, -self.height // 4),
-                 (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
-            Line((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
-            Line((self.width // 2, -self.height // 4),
-                 (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
-            Line((self.width // 2, self.height // 4),
-                 (self.width // 2 + length_sensor, self.height // 4)),
-            Line((-self.width // 2, self.height // 4),
-                 (-self.width // 2 - length_sensor, self.height // 4)),
-            Line((-self.width // 2, self.height * 3 // 4),
-                 (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
-            Line((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
-            Line((self.width // 2, self.height * 3 // 4),
-                 (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
-        ]
+        self.__fill_sensors()
 
         for line in self.sensors:
             line.move(self.x, self.y)
 
         self.sensors_points = []
         self.sensors_lines = []
+
         for line in self.sensors:
             xs, ys = line.point_start
             xe, ye = line.point_end
@@ -139,9 +123,43 @@ class Car:
                  (self.width // 2 + self.x, self.height * 3 // 4 + self.y))
         ]
 
+    def __fill_sensors(self):
+        length_sensor = self.length_sensor
+        length_sensor_45 = length_sensor / math.sqrt(2)
+        self.sensors = [
+            Line((-self.width // 2, -self.height // 4),
+                 (-self.width // 2 - length_sensor_45, -self.height // 4 - length_sensor_45)),
+            Line((0, -self.height // 4), (0, -self.height // 4 - length_sensor)),
+            Line((self.width // 2, -self.height // 4),
+                 (self.width // 2 + length_sensor_45, -self.height // 4 - length_sensor_45)),
+            Line((self.width // 2, self.height // 4),
+                 (self.width // 2 + length_sensor, self.height // 4)),
+            Line((-self.width // 2, self.height // 4),
+                 (-self.width // 2 - length_sensor, self.height // 4)),
+            Line((-self.width // 2, self.height * 3 // 4),
+                 (-self.width // 2 - length_sensor_45, self.height * 3 // 4 + length_sensor_45)),
+            Line((0, self.height * 3 // 4), (0, self.height * 3 // 4 + length_sensor)),
+            Line((self.width // 2, self.height * 3 // 4),
+                 (self.width // 2 + length_sensor_45, self.height * 3 // 4 + length_sensor_45))
+        ]
+
+    def set_coordinate(self, x, y):
+        for line in self.body_sides:
+            line.move(x-self.x, y-self.y)
+
+        for line in self.sensors:
+            line.move(x-self.x, y-self.y)
+
+        self.x = x
+        self.y = y
+
+        self.body.x = x
+        self.body.y = y
+        self.body.anchor_position = (self.width // 2, self.height // 4)
+
     def draw(self):
         self.body.draw()
-
+        #
         # for line in self.sensors:
         #     xs, ys = line.point_start
         #     xe, ye = line.point_end
@@ -149,11 +167,10 @@ class Car:
         #
         #     line.draw()
 
-        # for point in self.sensors_points:
-        #     x, y = point
-        #     p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
-        #     p.draw()
-        # line.delete()
+        for point in self.sensors_points:
+            x, y = point
+            p = pyglet.shapes.Circle(x, y, 5, 5, color=(255, 0, 0))
+            p.draw()
 
     def move(self, ds):
         self.ds = ds
