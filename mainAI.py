@@ -36,7 +36,7 @@ total_score = 0
 counter = 0
 frequency_ai = 2
 
-environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0, amount_inactivity=400)
+environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.01, amount_inactivity=400)
 
 agent = Agent(epsilon_decay=0.995, action_size=5, epsilon_min=0.02)
 
@@ -114,7 +114,7 @@ def restart():
     counter = 0
 
     next_state = None
-    environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.1, amount_inactivity=400)
+    environment = Environment(generator.frames, generator.rewards, generator.finish, reward_move=0.01, amount_inactivity=400)
     car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, length_sensor=150)
     car.set_coordinate(x=x, y=y)
 

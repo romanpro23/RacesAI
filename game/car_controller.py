@@ -7,15 +7,17 @@ from game.environment import Environment
 
 class CarController:
     car: Car
-    ai: bool
     agent: Agent
-    action: int
 
-    car_parameters: dict
+    ai: bool
     frequency_ai: int
 
+    action: int
     counter: int
     total_score: int
+    accumulated_reward: int
+
+    car_parameters: dict
 
     directions = {
         "up": False,
@@ -32,6 +34,7 @@ class CarController:
         self.counter = 0
         self.total_score = 0
         self.action = 0
+        self.accumulated_reward = 0
 
         self.agent = agent
         self.car = car
@@ -106,31 +109,31 @@ class CarController:
             self.car.rot(1)
 
     def make_action(self, state):
-        if self.ai:
+        if self.counter % self.frequency_ai == 0:
             self.ai_action(state)
+        self.counter += 1
 
     def update(self, state, reward, done, next_state=None):
         self.__direction_update()
         self.car.update()
 
+        self.accumulated_reward += reward
         self.total_score += reward
 
-        if self.ai:
-            self.agent.update(state, self.action, reward, next_state, done)
+        if (self.counter % self.frequency_ai == (self.frequency_ai - 1) or done) and self.ai:
+            self.agent.update(state, self.action, self.accumulated_reward, next_state, done)
             self.agent.train(64, update_epsilon=True)
+
+            self.accumulated_reward = 0
 
         if done:
             self.restart()
 
     def ai_action(self, state):
-        if not self.counter % self.frequency_ai == 0:
-            self.counter += 1
-            return
-
-        self.counter += 1
         self.clear_directions()
+        print(self.counter)
 
-        self.action = self.agent.action(inputs=state)
+        self.action = self.agent.action(state)
         self.change_direction(self.get_str_action(self.action), True)
 
     @staticmethod
@@ -149,8 +152,8 @@ class CarController:
     def restart(self):
         print(self.total_score, self.counter)
         if self.ai:
-            if not os.path.exists("/models"):
-                os.makedirs("/models")
+            if not os.path.exists("models"):
+                os.makedirs("models")
             self.agent.save(f"models/ai_{self.total_score}")
 
         self.total_score = 0

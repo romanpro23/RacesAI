@@ -11,5 +11,5 @@ class Background:
         self.image = pyglet.image.load(image)
 
     def draw(self):
-        pass
-        # self.image.blit(0, 0)
+        # pass
+        self.image.blit(0, 0)

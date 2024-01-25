@@ -159,13 +159,13 @@ class Car:
 
     def draw(self):
         self.body.draw()
-        #
-        # for line in self.sensors:
-        #     xs, ys = line.point_start
-        #     xe, ye = line.point_end
-        #     line = pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255))
-        #
-        #     line.draw()
+
+        for line in self.sensors:
+            xs, ys = line.point_start
+            xe, ye = line.point_end
+            line = pyglet.shapes.Line(xs, ys, xe, ye, width=2, color=(255, 255, 255))
+
+            line.draw()
 
         for point in self.sensors_points:
             x, y = point

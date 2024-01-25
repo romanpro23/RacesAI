@@ -19,7 +19,7 @@ window = pyglet.window.Window(width=width, height=height, caption='Races AI')
 window.set_location(x, y)
 
 car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, length_sensor=150)
-game_controller = GameController(car=car, agent=agent)
+game_controller = GameController(car=car, agent=agent, reward_move=0.05)
 
 
 def update(dt):
@@ -40,6 +40,7 @@ def on_key_press(symbol, modifiers):
 @window.event
 def on_key_release(symbol, modifiers):
     game_controller.on_key_release(symbol, modifiers)
+
 
 
 pyglet.clock.schedule_interval(update, 1.0 / game_controller.fps)

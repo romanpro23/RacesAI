@@ -15,7 +15,7 @@ class Environment:
     amount_inactivity: int
     reward_move: float
 
-    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=600, reward_move=0.025):
+    def __init__(self, frames_sides, reward_lines, finish, amount_inactivity=400, reward_move=0.01):
         self.frames = frames_sides
         self.rewards = list(reward_lines)
         self.accumulated_reward = 1
@@ -122,7 +122,7 @@ class Environment:
         if reward == 0:
             if car.speed > 0:
                 reward = self.reward_move
-            elif car.speed < 0:
+            elif car.speed <= 0:
                 reward = -self.reward_move
 
         return reward, done
