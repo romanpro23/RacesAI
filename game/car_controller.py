@@ -131,7 +131,6 @@ class CarController:
 
     def ai_action(self, state):
         self.clear_directions()
-        print(self.counter)
 
         self.action = self.agent.action(state)
         self.change_direction(self.get_str_action(self.action), True)

@@ -101,7 +101,7 @@ class Environment:
                 for line in self.rewards:
                     if side.check_intersection(line) is not None:
                         reward = self.accumulated_reward
-                        self.accumulated_reward += 0.05
+                        self.accumulated_reward += 0.0
                         self.counter_action = 0
 
                         self.rewards.remove(line)

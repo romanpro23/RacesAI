@@ -19,7 +19,7 @@ window = pyglet.window.Window(width=width, height=height, caption='Races AI')
 window.set_location(x, y)
 
 car = Car(25, 10, max_speed=5, drift_control=0.1, color=RED, length_sensor=150)
-game_controller = GameController(car=car, agent=agent, reward_move=0.05)
+game_controller = GameController(car=car, agent=agent, reward_move=0.0, frequency_ai=2)
 
 
 def update(dt):
