@@ -39,7 +39,7 @@ After starting the training, you can see that our agent, knowing nothing from th
 You can try to configure the car by changing its parameters in the designer and see how it will learn on your configuration.
 
 The designer of the car and the fields that can be set
-'''
+```
 def __init__(self,
                  height,
                  width,
@@ -56,7 +56,7 @@ def __init__(self,
                  length_sensor=50,
                  x=384,
                  y=300):
-'''
+```
 
 **Just try it!**
 
